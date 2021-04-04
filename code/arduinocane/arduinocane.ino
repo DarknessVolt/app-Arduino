@@ -5,8 +5,10 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
+#include <TimedAction.h> //protothreading library
+
 //setup the pins for the bluetooth
-SoftwareSerial MyBlue(10, 11); // RX | TX
+SoftwareSerial MyBlue(1, 3); // RX | TX
 
 //reads inccoming data
 int flag = 0;
@@ -43,6 +45,8 @@ sensors_event_t event;
 float orientation_x;
 float orientation_y;
 float orientation_z;
+
+
 
 //messy stuff
 unsigned long time1;
@@ -84,17 +88,22 @@ void motion_sensor_stuff()
 {
   /* Get a new sensor event */
   bno.getEvent(&event);
+  imu::Vector<3> compass = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+  /*
+    orientation_x = (float)event.orientation.x;
+    orientation_y = (float)event.orientation.y;
+    orientation_z = (float)event.orientation.z;
+  */
+  orientation_x = (float)compass.x();
+  orientation_y = (float)compass.y();
+  orientation_z = (float)compass.z();
 
-  orientation_x = (float)event.orientation.x;
-  orientation_y = (float)event.orientation.y;
-  orientation_z = (float)event.orientation.z;
-  
   /*Serial.print(360 - (float)event.orientation.x);
-  Serial.print(F(", "));
-  Serial.print((float)event.orientation.y);
-  Serial.print(F(", "));
-  Serial.print((float)event.orientation.z);
-  Serial.println(F(""));  */
+    Serial.print(F(", "));
+    Serial.print((float)event.orientation.y);
+    Serial.print(F(", "));
+    Serial.print((float)event.orientation.z);
+    Serial.println(F(""));  */
 
   delay(BNO055_SAMPLERATE_DELAY_MS);
 }
@@ -102,54 +111,31 @@ void motion_sensor_stuff()
 void bluetooth_stuff()
 {
   //write to bluetooth and serial output the data collected from the ultrasonic and motion sensors
-  if (time2 - time1 >= 1000)
-  {
-    out+= distance;
-    out += F(", ");
-    
-    out += (float)orientation_x;
-    out += F(", ");
-    out += (float)orientation_y;
-    out += F(", ");
-    out += (float)orientation_z;
-    out += F("");
+  out += distance;
+  out += F(", ");
 
-    
-    MyBlue.println(out);
-    //Serial.println(out);
-    Serial.println((float)distance);
-    Serial.println((float)orientation_x);
-    Serial.println((float)orientation_y);
-    Serial.println((float)orientation_z);
-    time1 = millis();
-  }
+  out += (float)orientation_x;
+  out += F(", ");
+  out += (float)orientation_y;
+  out += F(", ");
+  out += (float)orientation_z;
+  out += F("");
+
+
+  MyBlue.println(out);
+  //Serial.println(out);
+  Serial.println((float)distance);
+  Serial.println((float)orientation_x);
+  Serial.println((float)orientation_y);
+  Serial.println((float)orientation_z);
+  time1 = millis();
   out = "";
 
-  //if the bluetooth module has incoming data, read that data
-  if (MyBlue.available())
-  {
-    flag = MyBlue.read();
-    Serial.println(flag);
-  }
-  
-  //turn light on or off depending on what was read
-  if (flag == '1')
-  {
-    if (ledOn == 0)
-    {
-      ledOn = 1;
-      digitalWrite(LED, HIGH);
-    }
-    else
-    {
-      ledOn = 0;
-      digitalWrite(LED, LOW);
-    }
-  }
-  
-  flag = 0;
-
 }
+
+TimedAction ultrasonic_thread = TimedAction(100, ultrasonic_stuff);
+TimedAction motion_sensor_thread = TimedAction(BNO055_SAMPLERATE_DELAY_MS, motion_sensor_stuff);
+TimedAction bluetooth_thread = TimedAction(100, bluetooth_stuff);
 
 void setup()
 {
@@ -171,10 +157,10 @@ void setup()
     while (1);
   }
   delay(1000);
-  
+
   // Use external crystal for better accuracy
   bno.setExtCrystalUse(true);
-   
+
   time1 = millis();
   time2;
 
@@ -188,9 +174,35 @@ void setup()
 void loop()
 {
 
-  ultrasonic_stuff();
-  motion_sensor_stuff();
-  bluetooth_stuff();
+  ultrasonic_thread.check();
+  motion_sensor_thread.check();
+  bluetooth_thread.check();
+
+
+  //if the bluetooth module has incoming data, read that data
+  if (MyBlue.available())
+  {
+    flag = MyBlue.read();
+    Serial.println(flag);
+  }
+
+  //turn light on or off depending on what was read
+  if (flag == '1')
+  {
+    if (ledOn == 0)
+    {
+      ledOn = 1;
+      digitalWrite(LED, HIGH);
+    }
+    else
+    {
+      ledOn = 0;
+      digitalWrite(LED, LOW);
+    }
+  }
+
+  flag = 0;
+
   //sound stuff
   if (flag == '2')
   {
