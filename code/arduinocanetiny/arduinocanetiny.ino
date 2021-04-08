@@ -1,6 +1,7 @@
 #include <SoftwareSerial.h>
 //#include <ATtinySerialOut.h>
 #include <TinyWireM.h>
+#include <HCSR04.h>
 //#include <Adafruit_Sensor.h>
 //#include <Adafruit_BNO055.h>
 //#include <utility/imumaths.h>
@@ -16,14 +17,14 @@ SoftwareSerial MyBlue(RxD, TxD); // RX | TX
 int flag = 0;
 
 //for sending data
-String out;
+//String out;
 //setup led pin
 const int LED = 10;
 
 //setup pins for the ultrasonic sensor
 const int trigPin = 7;
 const int echoPin = 8;
-
+UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 //used to calculate distance via how long it takes for sound to leave and return to the sensor
 long duration = 0;
 int distance = 0;
@@ -76,7 +77,7 @@ void ultrasonic_stuff()
 
   //calculate distance
   distance = duration * 0.034 / 2;
-  delay(100);
+  //delay(100);
   digitalWrite(LED, LOW);
 
 }
@@ -107,7 +108,7 @@ void bluetooth_stuff()
   //digitalWrite(LED, HIGH);
   //out = F("");
   //write to bluetooth and serial output the data collected from the ultrasonic and motion sensors
-  out = distance+"apple\n";
+//  out = distance+"apple\n";
   //out += F(", ");
   
 //    out += (float)orientation_x;
@@ -117,8 +118,8 @@ void bluetooth_stuff()
 //    out += (float)orientation_z;
 //    out += F("");
 
-
-  MyBlue.print(out);
+  distance = distanceSensor.measureDistanceCm();
+  MyBlue.print(distance);
   //Serial.println(out);
   //  Serial.println((float)distance);
   //  Serial.println((float)orientation_x);
@@ -147,9 +148,9 @@ void setup()
   //out.reserve(30);
 
   //ultrasonic setup, trigpin outputs, echopin receives
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-
+//  pinMode(trigPin, OUTPUT);
+//  pinMode(echoPin, INPUT);
+  
   // Initialise the sensor
   //  if (!bno.begin())
   //  {
@@ -168,10 +169,16 @@ void setup()
 void loop()
 {
   //MyBlue.print(distance);
-  ultrasonic_thread.check();
-  motion_sensor_thread.check();
-  bluetooth_thread.check();
-
+  //ultrasonic_thread.check();
+  //motion_sensor_thread.check();
+  //bluetooth_thread.check();
+  //ultrasonic_stuff();
+  //bluetooth_stuff();
+  
+  double d = distanceSensor.measureDistanceCm();
+  MyBlue.print(d);
+  MyBlue.print("\n");
+  delay(100);
   
   //if the bluetooth module has incoming data, read that data
 //  if (MyBlue.available())
