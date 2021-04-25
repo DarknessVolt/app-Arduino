@@ -177,6 +177,7 @@ void loop()
 {
   //MyBlue.print(distance);
 <<<<<<< HEAD
+<<<<<<< HEAD
   //ultrasonic_thread.check();
   //motion_sensor_thread.check();
   //bluetooth_thread.check();
@@ -188,10 +189,15 @@ void loop()
   MyBlue.print((int)d);
   delay(100);
 =======
+=======
+>>>>>>> parent of f62099f... Working attiny code
   ultrasonic_thread.check();
   motion_sensor_thread.check();
   bluetooth_thread.check();
 
+<<<<<<< HEAD
+>>>>>>> parent of f62099f... Working attiny code
+=======
 >>>>>>> parent of f62099f... Working attiny code
   
   //if the bluetooth module has incoming data, read that data
