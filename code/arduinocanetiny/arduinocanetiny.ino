@@ -29,6 +29,10 @@ UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 long duration = 0;
 int distance = 0;
 
+//Haptic Feedback
+byte PWM_PIN = 2;
+int duty_cycle = 255;
+int mode = 0;
 
 //Motion sensor stuff
 #define BNO055_SAMPLERATE_DELAY_MS (88)
@@ -136,9 +140,12 @@ TimedAction bluetooth_thread = TimedAction(50, bluetooth_stuff);
 
 void setup()
 {
+  //pinMode(PWM_PIN, OUTPUT);
   pinMode(RxD, INPUT);
   pinMode(TxD, OUTPUT);
-  setupBlueToothConnection();
+  
+  //setupBlueToothConnection();
+
   //bluetooth setup, sets the baud rate and sets the pin's mode to output
   //Serial.begin(9600);
   //MyBlue.begin(300);
@@ -163,7 +170,8 @@ void setup()
   // Use external crystal for better accuracy
   //  bno.setExtCrystalUse(true);
 
-
+  //analogWrite(PWM_PIN, duty_cycle);
+  
 }
 
 void loop()
@@ -174,10 +182,10 @@ void loop()
   //bluetooth_thread.check();
   //ultrasonic_stuff();
   //bluetooth_stuff();
-  
+//  digitalWrite(PWM_PIN, HIGH);
+//  digitalWrite(PWM_PIN, LOW);
   double d = distanceSensor.measureDistanceCm();
-  MyBlue.print(d);
-  MyBlue.print("\n");
+  MyBlue.print((int)d);
   delay(100);
   
   //if the bluetooth module has incoming data, read that data
@@ -218,4 +226,5 @@ void loop()
 //      digitalWrite(buzzerPin, LOW);
 //    }
 //  }
+
 }
