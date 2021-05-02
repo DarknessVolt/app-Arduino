@@ -29,10 +29,6 @@ UltraSonicDistanceSensor distanceSensor(trigPin, echoPin);
 long duration = 0;
 int distance = 0;
 
-//Haptic Feedback
-byte PWM_PIN = 2;
-int duty_cycle = 255;
-int mode = 0;
 
 //Motion sensor stuff
 #define BNO055_SAMPLERATE_DELAY_MS (88)
@@ -57,7 +53,7 @@ void setupBlueToothConnection()
   MyBlue.print("\r\n+STAUTO=1\r\n"); // Auto-connection should be forbidden here
   
   delay(2000); // This delay is required.
-  //blueToothSerial.print("\r\n+INQ=1\r\n"); //make the slave bluetooth inquirable 
+  //MyBlue.print("\r\n+INQ=1\r\n"); //make the slave bluetooth inquirable 
   MyBlue.print("bluetooth connected!\n");
    
   delay(2000); // This delay is required.
@@ -140,12 +136,9 @@ TimedAction bluetooth_thread = TimedAction(50, bluetooth_stuff);
 
 void setup()
 {
-  //pinMode(PWM_PIN, OUTPUT);
   pinMode(RxD, INPUT);
   pinMode(TxD, OUTPUT);
-  
-  //setupBlueToothConnection();
-
+  setupBlueToothConnection();
   //bluetooth setup, sets the baud rate and sets the pin's mode to output
   //Serial.begin(9600);
   //MyBlue.begin(300);
@@ -170,8 +163,7 @@ void setup()
   // Use external crystal for better accuracy
   //  bno.setExtCrystalUse(true);
 
-  //analogWrite(PWM_PIN, duty_cycle);
-  
+
 }
 
 void loop()
@@ -182,11 +174,11 @@ void loop()
   //bluetooth_thread.check();
   //ultrasonic_stuff();
   //bluetooth_stuff();
-//  digitalWrite(PWM_PIN, HIGH);
-//  digitalWrite(PWM_PIN, LOW);
+  
   double d = distanceSensor.measureDistanceCm();
-  MyBlue.print((int)d);
-  delay(100);
+  MyBlue.print(d, 0);
+  MyBlue.print("\n");
+  delay(200);
   
   //if the bluetooth module has incoming data, read that data
 //  if (MyBlue.available())
@@ -226,5 +218,4 @@ void loop()
 //      digitalWrite(buzzerPin, LOW);
 //    }
 //  }
-
 }
