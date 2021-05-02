@@ -176,7 +176,7 @@ void loop()
   //bluetooth_stuff();
   
   double d = distanceSensor.measureDistanceCm();
-  MyBlue.print(d, 0);
+  MyBlue.print(d);
   MyBlue.print("\n");
   delay(200);
   
